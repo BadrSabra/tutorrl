@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TutorRL - Egyptian AI Tutor API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: chat
+    description: AI tutor chat
+  - name: feedback
+    description: Message feedback
+  - name: assessment
+    description: Student level assessment
 paths:
   /healthz:
     get:
@@ -24,6 +30,91 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /chat:
+    post:
+      operationId: sendChat
+      tags: [chat]
+      summary: Send message to AI tutor
+      description: Send a student message and receive a Socratic AI tutor response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: AI tutor response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /feedback:
+    post:
+      operationId: submitFeedback
+      tags: [feedback]
+      summary: Submit feedback on a message
+      description: Allow students to rate an AI tutor message as helpful or not
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackInput"
+      responses:
+        "200":
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /assess:
+    post:
+      operationId: assessLevel
+      tags: [assessment]
+      summary: Assess student level from placement test
+      description: Submit placement test answers and get back level and study plan recommendations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentInput"
+      responses:
+        "200":
+          description: Assessment result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +125,135 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+      required:
+        - role
+        - content
+
+    ChatInput:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        subject:
+          type: string
+          enum: [math, physics, chemistry, biology]
+        grade:
+          type: string
+          enum: ["1sec", "2sec", "3sec"]
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        language:
+          type: string
+          enum: [ar, en]
+        learningStyle:
+          type: string
+          enum: [visual, practical, theoretical, step-by-step]
+        studentStrengths:
+          type: array
+          items:
+            type: string
+        studentWeaknesses:
+          type: array
+          items:
+            type: string
+      required:
+        - messages
+        - subject
+        - grade
+        - level
+        - language
+        - learningStyle
+
+    ChatResponse:
+      type: object
+      properties:
+        content:
+          type: string
+        messageId:
+          type: string
+      required:
+        - content
+        - messageId
+
+    FeedbackInput:
+      type: object
+      properties:
+        messageId:
+          type: string
+        rating:
+          type: string
+          enum: [like, dislike]
+        reason:
+          type: ["string", "null"]
+      required:
+        - messageId
+        - rating
+
+    FeedbackResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    AssessmentInput:
+      type: object
+      properties:
+        subject:
+          type: string
+          enum: [math, physics, chemistry, biology]
+        grade:
+          type: string
+          enum: ["1sec", "2sec", "3sec"]
+        answers:
+          type: array
+          items:
+            type: integer
+      required:
+        - subject
+        - grade
+        - answers
+
+    AssessmentResult:
+      type: object
+      properties:
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        strengths:
+          type: array
+          items:
+            type: string
+        weaknesses:
+          type: array
+          items:
+            type: string
+        recommendedTopics:
+          type: array
+          items:
+            type: string
+      required:
+        - level
+        - strengths
+        - weaknesses
+        - recommendedTopics

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "TutorRL"
+version = "1.0.0"
+id = "artifacts/tutor-rl"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19067
+
+[services.development]
+run = "pnpm --filter @workspace/tutor-rl run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/tutor-rl", "run", "build" ]
+publicDir = "artifacts/tutor-rl/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19067"
+BASE_PATH = "/"
