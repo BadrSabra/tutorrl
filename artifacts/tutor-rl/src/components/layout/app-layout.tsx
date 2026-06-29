@@ -14,7 +14,8 @@ export function AppLayout({ children, hideSidebar = false }: AppLayoutProps) {
   const [settings] = useLocalStorage<AppSettings>("tutorrl_settings", {
     language: "ar",
     learningStyle: "step-by-step",
-    theme: "light"
+    theme: "light",
+    fontSize: "medium"
   });
 
   const isDark = settings.theme === "dark" || 

@@ -13,6 +13,40 @@ import {
   SUBJECT_NAMES_AR, GRADE_NAMES_AR, LEVEL_NAMES_AR 
 } from "@/lib/types";
 
+const SUGGESTED_QUESTIONS_AR: Record<Subject, string[]> = {
+  math: [
+    "كيف أحل المعادلات التربيعية؟",
+    "ما الفرق بين التفاضل والتكامل؟",
+    "كيف أثبت مسألة هندسية؟",
+    "ما هي قاعدة حساب المشتقة؟",
+  ],
+  physics: [
+    "ما هو قانون نيوتن الثاني؟",
+    "كيف تعمل الدوائر الكهربائية؟",
+    "ما الفرق بين الشغل والطاقة؟",
+    "كيف أحسب سرعة الجسم المتحرك؟",
+  ],
+  chemistry: [
+    "كيف أوازن المعادلة الكيميائية؟",
+    "ما هي الروابط الكيميائية؟",
+    "كيف تتكون الأملاح من حمض وقاعدة؟",
+    "ما هو الجدول الدوري وكيف أقرأه؟",
+  ],
+  biology: [
+    "ما الفرق بين الخلية الحيوانية والنباتية؟",
+    "كيف تعمل عملية التنفس الخلوي؟",
+    "ما وظيفة الميتوكوندريا؟",
+    "كيف تنتقل الصفات الوراثية؟",
+  ],
+};
+
+const SUGGESTED_QUESTIONS_EN: Record<Subject, string[]> = {
+  math: ["How do I solve quadratic equations?", "What's the difference between derivatives and integrals?", "How do I prove a geometry theorem?"],
+  physics: ["What is Newton's second law?", "How do electric circuits work?", "What's the difference between work and energy?"],
+  chemistry: ["How do I balance a chemical equation?", "What are chemical bonds?", "How are salts formed?"],
+  biology: ["What's the difference between plant and animal cells?", "How does cellular respiration work?", "What is the function of mitochondria?"],
+};
+
 export default function Chat() {
   const [, setLocation] = useLocation();
   const [currentSubject] = useLocalStorage<Subject | null>("tutorrl_current_subject", null);
@@ -228,6 +262,11 @@ export default function Chat() {
       <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50/50 dark:bg-slate-900/20" ref={scrollRef}>
         {session.messages.map((msg, idx) => {
           const isUser = msg.role === "user";
+          const suggestedQs = isAr
+            ? SUGGESTED_QUESTIONS_AR[currentSubject]
+            : SUGGESTED_QUESTIONS_EN[currentSubject];
+          const showSuggestions = !isUser && idx === 0 && session.messages.length === 1 && !sendChatMutation.isPending;
+
           return (
             <div key={msg.id} className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
               <Avatar className={`w-8 h-8 flex-shrink-0 ${isUser ? 'bg-accent/20' : 'bg-primary/10'}`}>
@@ -243,6 +282,25 @@ export default function Chat() {
                 }`}>
                   {msg.content}
                 </div>
+
+                {showSuggestions && suggestedQs && (
+                  <div className="mt-3 flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-500">
+                    <p className="w-full text-xs text-muted-foreground mb-1">
+                      {isAr ? "أسئلة للبداية:" : "Try asking:"}
+                    </p>
+                    {suggestedQs.map((q, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setInput(q);
+                        }}
+                        className="px-3 py-1.5 text-sm rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/15 hover:border-primary/60 text-foreground transition-all text-right rtl:text-right cursor-pointer"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 
                 {!isUser && idx > 0 && (
                   <div className="flex gap-1 mt-1 opacity-60 hover:opacity-100 transition-opacity">

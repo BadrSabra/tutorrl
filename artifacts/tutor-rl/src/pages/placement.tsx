@@ -19,7 +19,8 @@ export default function Placement() {
   const [settings] = useLocalStorage<AppSettings>("tutorrl_settings", {
     language: "ar",
     learningStyle: "step-by-step",
-    theme: "light"
+    theme: "light",
+    fontSize: "medium"
   });
   
   const isAr = settings.language === "ar";
